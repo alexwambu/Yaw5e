@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Movie Generator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    textarea, input { width: 100%; margin-top: 10px; }
+    button { margin-top: 10px; padding: 10px; }
+    #progress { width: 100%; background: #eee; margin: 10px 0; height: 20px; }
+    #bar { height: 100%; width: 0%; background: green; }
+    #preview, #player { margin-top: 20px; max-width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>AI Movie Generator</h1>
+  <textarea id="script" placeholder="Enter your movie script here..."></textarea>
+  <input type="file" id="uploads" multiple>
+  <button onclick="generateMovie()">Generate Movie</button>
+
+  <div id="progress"><div id="bar"></div></div>
+  <p id="status"></p>
+
+  <img id="preview" style="display:none;">
+  <video id="player" controls style="display:none;"></video>
+
+  <script>
+    async function generateMovie() {
+      const script = document.getElementById("script").value;
+      const files = document.getElementById("uploads").files;
+
+      if (!script) {
+        alert("Enter a script first!");
+        return;
+      }
+
+      document.getElementById("status").innerText = "Generating...";
+      document.getElementById("bar").style.width = "30%";
+
+      const formData = new FormData();
+      formData.append("script", script);
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+      }
+
+      const res = await fetch("/generate", { method: "POST", body: formData });
+      const data = await res.json();
+      const jobId = data.job_id;
+
+      document.getElementById("bar").style.width = "60%";
+
+      // Preview
+      const previewUrl = `/preview/${jobId}`;
+      document.getElementById("preview").src = previewUrl;
+      document.getElementById("preview").style.display = "block";
+
+      document.getElementById("bar").style.width = "90%";
+
+      // Movie
+      const movieUrl = `/download/${jobId}`;
+      document.getElementById("player").src = movieUrl;
+      document.getElementById("player").style.display = "block";
+
+      document.getElementById("bar").style.width = "100%";
+      document.getElementById("status").innerText = "Done!";
+    }
+  </script>
+</body>
+</html>
