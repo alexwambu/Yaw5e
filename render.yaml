@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: ai-movie-generator
+    env: docker
+    plan: free
